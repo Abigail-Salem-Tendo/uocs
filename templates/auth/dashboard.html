@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - UOCS</title>
+</head>
+<body>
+    <h1>Welcome, {{ user.username }}</h1>
+    <p>Logged in as: <strong>{{ user.user_type }}</strong></p>
+
+    <p><em>This is a placeholder. Role-specific dashboards (citizen report form,
+    provider dashboard, admin panel) are not built yet.</em></p>
+
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+</body>
+</html>
