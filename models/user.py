@@ -38,7 +38,8 @@ class Citizen(User):
 
 class UtilityProvider(User):
     # Nullable for now — will become a real FK once UtilityType model exists (Phase 2)
-    utility_type_id = db.Column(db.Integer, nullable=True)
+    utility_type_id = db.Column(db.Integer, db.ForeignKey("utility_types.id"), nullable=True)
+    utility_type = db.relationship("UtilityType", back_populates="providers")
 
     __mapper_args__ = {
         'polymorphic_identity': 'provider'
