@@ -23,6 +23,9 @@ def create_app():
 
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp)
+    
+    from routes.citizen import citizen_bp
+    app.register_blueprint(citizen_bp)
 
     return app
 

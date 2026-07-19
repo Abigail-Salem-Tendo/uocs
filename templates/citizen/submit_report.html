@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Report an Outage</h2>
+
+<form method="POST" action="{{ url_for('citizen.report_outage') }}">
+    <div>
+        <label for="area_name">Area / Location</label>
+        <input
+            type="text"
+            id="area_name"
+            name="area_name"
+            list="location-suggestions"
+            placeholder="e.g. Ntinda"
+            required
+        >
+        <datalist id="location-suggestions">
+            {% for loc in existing_locations %}
+                <option value="{{ loc.area_name }}">
+            {% endfor %}
+        </datalist>
+    </div>
+
+    <div>
+        <label for="address">Address (optional)</label>
+        <input type="text" id="address" name="address" placeholder="Street / landmark">
+    </div>
+
+    <div>
+        <label for="utility_type_id">Utility Type</label>
+        <select id="utility_type_id" name="utility_type_id" required>
+            <option value="" disabled selected>Select type</option>
+            {% for ut in utility_types %}
+                <option value="{{ ut.id }}">{{ ut.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+    </div>
+
+    <button type="submit">Submit Report</button>
+</form>
+{% endblock %}
