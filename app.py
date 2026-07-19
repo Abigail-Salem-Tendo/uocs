@@ -1,6 +1,7 @@
 from flask import Flask
 from config import Config
 from extensions import db, bcrypt, login_manager, migrate
+import models
 
 
 def create_app():
