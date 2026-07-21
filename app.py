@@ -24,6 +24,12 @@ def create_app():
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp)
 
+    from routes.citizen import citizen_bp
+    app.register_blueprint(citizen_bp)
+
+    from routes.provider import provider_bp
+    app.register_blueprint(provider_bp)
+
     return app
 
 
