@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Manage Users</h2>
+
+<p>
+    <a href="{{ url_for('admin.users') }}">All</a> |
+    <a href="{{ url_for('admin.users', role='citizen') }}">Citizens</a> |
+    <a href="{{ url_for('admin.users', role='provider') }}">Providers</a> |
+    <a href="{{ url_for('admin.users', role='admin') }}">Admins</a>
+    &nbsp;|&nbsp;
+    <a href="{{ url_for('admin.create_provider') }}">+ Create Provider</a>
+</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Utility Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.user_type }}</td>
+            <td>
+                {% if u.user_type == 'provider' %}
+                    <form method="POST" action="{{ url_for('admin.assign_utility', user_id=u.id) }}">
+                        <select name="utility_type_id">
+                            <option value="" disabled {% if not u.utility_type_id %}selected{% endif %}>Unassigned</option>
+                            {% for ut in utility_types %}
+                                <option value="{{ ut.id }}" {% if u.utility_type_id == ut.id %}selected{% endif %}>{{ ut.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit">Save</button>
+                    </form>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>{{ "Active" if u.active else "Deactivated" }}</td>
+            <td>
+                {% if u.id != current_user.id %}
+                <form method="POST" action="{{ url_for('admin.toggle_active', user_id=u.id) }}">
+                    <button type="submit">{{ "Deactivate" if u.active else "Activate" }}</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

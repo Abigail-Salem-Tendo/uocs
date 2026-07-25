@@ -50,6 +50,10 @@ def login():
             flash('Invalid email or password.', 'error')
             return redirect(url_for('auth.login'))
 
+        if not user.active:
+            flash('This account has been deactivated. Contact an administrator.', 'error')
+            return redirect(url_for('auth.login'))
+
         login_user(user)
         return redirect(url_for('auth.dashboard'))
 
