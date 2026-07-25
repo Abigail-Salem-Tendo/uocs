@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Reports</h2>
+
+{% if not reports %}
+    <p>You haven't submitted any outage reports yet.</p>
+    <a href="{{ url_for('citizen.report_outage') }}">Report an outage</a>
+{% else %}
+    <table>
+        <thead>
+            <tr>
+                <th>Reported</th>
+                <th>Utility Type</th>
+                <th>Area</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr class="status-{{ report.status.value }}">
+                <td>{{ report.reported_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ report.utility_type.name }}</td>
+                <td>{{ report.location.area_name }}</td>
+                <td>{{ report.description }}</td>
+                <td>{{ report.status.value | replace('_', ' ') | title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}

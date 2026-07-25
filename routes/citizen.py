@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from extensions import db
 from models import Location, UtilityType, OutageReport
+from models.hotspot_service import HotspotService
+from models.notification import Notification
 
 citizen_bp = Blueprint("citizen", __name__, url_prefix="/citizen")
 
@@ -68,6 +70,12 @@ def report_outage():
         db.session.add(report)
         db.session.commit()
 
+        # --- FR3.3: check if this report just formed/joined a hotspot, notify provider ---
+        # Cheap to run on every submission — get_hotspots() is a single grouped
+        # query, and notify_new_hotspots() is a no-op for clusters already
+        # notified (enforced by Notification's unique constraint).
+        HotspotService.notify_new_hotspots()
+
         flash("Outage report submitted successfully.", "success")
         return redirect(url_for("auth.dashboard"))
 
@@ -76,3 +84,29 @@ def report_outage():
         utility_types=utility_types,
         existing_locations=existing_locations,
     )
+
+@citizen_bp.route("/my-reports")
+@login_required
+def my_reports():
+    _require_citizen()
+
+    reports = (
+        OutageReport.query.filter_by(citizen_id=current_user.id)
+        .order_by(OutageReport.reported_at.desc())
+        .all()
+    )
+
+    return render_template("citizen/my_reports.html", reports=reports)
+
+@citizen_bp.route("/notifications")
+@login_required
+def notifications():
+    _require_citizen()
+
+    my_notifications = (
+        Notification.query.filter_by(recipient_id=current_user.id)
+        .order_by(Notification.created_at.desc())
+        .all()
+    )
+
+    return render_template("citizen/notifications.html", notifications=my_notifications)
