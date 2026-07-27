@@ -6,7 +6,7 @@ from extensions import db
 from models.location import Location
 from models.outage_report import OutageReport, ReportStatus
 from models.utility_type import UtilityType
-from models.utility_provider import UtilityProvider
+from models.user import UtilityProvider
 from models.notification import Notification, NotificationType
 
 HOTSPOT_WINDOW_HOURS = 12

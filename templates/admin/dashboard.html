@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>System Dashboard</h2>
+
+<section>
+    <h3>Active Hotspots</h3>
+    {% if not hotspots %}
+        <p>No active hotspots.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Area</th>
+                    <th>Utility Type</th>
+                    <th>Report Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in hotspots %}
+                <tr>
+                    <td>{{ h.location.area_name }}</td>
+                    <td>{{ h.utility_type.name }}</td>
+                    <td>{{ h.report_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</section>
+
+<section>
+    <h3>All Reports</h3>
+
+    <form method="GET" action="{{ url_for('admin.dashboard') }}">
+        <select name="status">
+            <option value="">All statuses</option>
+            {% for s in statuses %}
+                <option value="{{ s.name }}" {% if current_status == s.name %}selected{% endif %}>{{ s.value | replace('_', ' ') | title }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="utility_type_id">
+            <option value="">All utility types</option>
+            {% for ut in utility_types %}
+                <option value="{{ ut.id }}" {% if current_utility_type == ut.id %}selected{% endif %}>{{ ut.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="location_id">
+            <option value="">All areas</option>
+            {% for loc in locations %}
+                <option value="{{ loc.id }}" {% if current_location == loc.id %}selected{% endif %}>{{ loc.area_name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Reported</th>
+                <th>Citizen</th>
+                <th>Utility Type</th>
+                <th>Area</th>
+                <th>Description</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td>{{ report.reported_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ report.citizen.username }}</td>
+                <td>{{ report.utility_type.name }}</td>
+                <td>{{ report.location.area_name }}</td>
+                <td>{{ report.description }}</td>
+                <td>{{ report.status.value | replace('_', ' ') | title }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -4,6 +4,9 @@ from flask_login import login_required, current_user
 from extensions import db
 from models.user import User, UtilityProvider
 from models.utility_type import UtilityType
+from models.outage_report import OutageReport, ReportStatus
+from models.location import Location
+from models.hotspot_service import HotspotService
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -109,3 +112,46 @@ def create_provider():
         return redirect(url_for("admin.users"))
 
     return render_template("admin/create_provider.html", utility_types=utility_types)
+
+
+admin_bp.route("/dashboard")
+@login_required
+def dashboard():
+    _require_admin()
+
+    query = OutageReport.query
+
+    status_filter = request.args.get("status")
+    if status_filter:
+        try:
+            query = query.filter_by(status=ReportStatus[status_filter])
+        except KeyError:
+            flash("Invalid status filter.", "warning")
+            status_filter = None
+
+    utility_type_filter = request.args.get("utility_type_id", type=int)
+    if utility_type_filter:
+        query = query.filter_by(utility_type_id=utility_type_filter)
+
+    location_filter = request.args.get("location_id", type=int)
+    if location_filter:
+        query = query.filter_by(location_id=location_filter)
+
+    reports = query.order_by(OutageReport.reported_at.desc()).all()
+
+    hotspots = HotspotService.get_hotspots()
+
+    utility_types = UtilityType.query.order_by(UtilityType.name).all()
+    locations = Location.query.order_by(Location.area_name).all()
+
+    return render_template(
+        "admin/dashboard.html",
+        reports=reports,
+        hotspots=hotspots,
+        statuses=list(ReportStatus),
+        utility_types=utility_types,
+        locations=locations,
+        current_status=status_filter,
+        current_utility_type=utility_type_filter,
+        current_location=location_filter,
+    )
