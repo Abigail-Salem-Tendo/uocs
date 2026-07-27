@@ -69,4 +69,13 @@ def logout():
 @auth_bp.route('/dashboard')
 @login_required
 def dashboard():
+    #Role specific landing page instead of a generic one
+    if current_user.user_type == 'citizen':
+        return redirect(url_for('citizen.report_outage'))
+    elif current_user.user_type == 'provider':
+        return redirect(url_for('provider.dashboard'))
+    elif current_user.user_type == 'admin':
+        return redirect(url_for('admin.dashboard'))
+
+    # this is a fallback but remove it 
     return render_template('auth/dashboard.html', user=current_user)

@@ -8,7 +8,19 @@
 <body>
     <nav>
         <a href="{{ url_for('auth.dashboard') if current_user.is_authenticated else url_for('auth.login') }}">UOCS</a>
+
         {% if current_user.is_authenticated %}
+            {% if current_user.user_type == 'citizen' %}
+                <a href="{{ url_for('citizen.report_outage') }}">Report Outage</a>
+                <a href="{{ url_for('citizen.my_reports') }}">My Reports</a>
+                <a href="{{ url_for('citizen.notifications') }}">Notifications</a>
+            {% elif current_user.user_type == 'provider' %}
+                <a href="{{ url_for('provider.dashboard') }}">Dashboard</a>
+            {% elif current_user.user_type == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('admin.users') }}">Manage Users</a>
+            {% endif %}
+
             <span>{{ current_user.username }} ({{ current_user.user_type }})</span>
             <a href="{{ url_for('auth.logout') }}">Logout</a>
         {% else %}

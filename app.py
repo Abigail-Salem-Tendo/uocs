@@ -30,6 +30,9 @@ def create_app():
     from routes.provider import provider_bp
     app.register_blueprint(provider_bp)
 
+    from routes.admin_routes import admin_bp
+    app.register_blueprint(admin_bp)
+
     from utils.seed import seed_db
     app.cli.add_command(seed_db)
 

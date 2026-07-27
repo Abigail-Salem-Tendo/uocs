@@ -114,7 +114,7 @@ def create_provider():
     return render_template("admin/create_provider.html", utility_types=utility_types)
 
 
-admin_bp.route("/dashboard")
+@admin_bp.route("/dashboard")
 @login_required
 def dashboard():
     _require_admin()
