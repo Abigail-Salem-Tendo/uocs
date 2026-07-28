@@ -4,6 +4,8 @@
 <h2>Create Provider Account</h2>
 
 <form method="POST" action="{{ url_for('admin.create_provider') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required>

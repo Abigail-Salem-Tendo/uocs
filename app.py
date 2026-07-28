@@ -1,6 +1,7 @@
-from flask import Flask
+from flask import Flask, redirect, url_for, flash
+from flask_login import current_user, logout_user
 from config import Config
-from extensions import db, bcrypt, login_manager, migrate
+from extensions import db, bcrypt, login_manager, migrate, csrf
 import models
 
 
@@ -12,6 +13,7 @@ def create_app():
     bcrypt.init_app(app)
     login_manager.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
 
     login_manager.login_view = 'auth.login'
 
@@ -20,6 +22,19 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    @app.before_request
+    def enforce_active_session():
+        """
+        Global guard: if Admin deactivates a user mid-session, this ends
+        it on their very next request instead of waiting for them to log
+        out themselves. @login_required alone only checks
+        is_authenticated, not is_active, so this closes that gap.
+        """
+        if current_user.is_authenticated and not current_user.active:
+            logout_user()
+            flash('This account has been deactivated. Contact an administrator.', 'error')
+            return redirect(url_for('auth.login'))
 
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp)

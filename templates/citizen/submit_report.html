@@ -4,6 +4,8 @@
 <h2>Report an Outage</h2>
 
 <form method="POST" action="{{ url_for('citizen.report_outage') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <div>
         <label for="area_name">Area / Location</label>
         <input
