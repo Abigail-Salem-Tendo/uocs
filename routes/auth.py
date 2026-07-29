@@ -1,9 +1,16 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from extensions import db
 from models.user import User, Citizen
 
 auth_bp = Blueprint('auth', __name__)
+
+
+def _send_password_reset_email(user):
+    token = user.get_reset_token()
+    reset_url = url_for('auth.reset_password', token=token, _external=True)
+    current_app.logger.info('Password reset link for %s: %s', user.email, reset_url)
+    return True
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -58,6 +65,53 @@ def login():
         return redirect(url_for('auth.dashboard'))
 
     return render_template('auth/login.html')
+
+
+@auth_bp.route('/reset-password', methods=['GET', 'POST'])
+def request_password_reset():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            _send_password_reset_email(user)
+
+        flash('If an account exists for that email, password reset instructions have been sent.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/request_password_reset.html')
+
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.verify_reset_token(
+        token,
+        expires_sec=current_app.config.get('RESET_PASSWORD_TOKEN_EXPIRATION', 1800),
+    )
+
+    if user is None:
+        flash('That password reset link is invalid or has expired.', 'error')
+        return redirect(url_for('auth.request_password_reset'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not password:
+            flash('Password is required.', 'error')
+            return render_template('auth/reset_password.html', token=token)
+
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
+            return render_template('auth/reset_password.html', token=token)
+
+        user.set_password(password)
+        db.session.commit()
+
+        flash('Your password has been updated. Please log in.', 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('auth/reset_password.html', token=token)
 
 @auth_bp.route('/logout')
 @login_required

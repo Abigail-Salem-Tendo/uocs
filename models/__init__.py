@@ -10,5 +10,6 @@ of which model happens to reference which via ForeignKey.
 
 from models.user import User, Citizen, UtilityProvider, Admin
 from models.location import Location
+from models.notification import Notification, NotificationType
 from models.utility_type import UtilityType
 from models.outage_report import OutageReport, ReportStatus

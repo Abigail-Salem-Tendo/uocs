@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import Location, UtilityType, OutageReport
 from models.hotspot_service import HotspotService
-from models.notification import Notification
+from models.notification import Notification, NotificationType
 
 citizen_bp = Blueprint("citizen", __name__, url_prefix="/citizen")
 
@@ -68,6 +68,21 @@ def report_outage():
             description=description,
         )
         db.session.add(report)
+
+        db.session.flush()
+
+        received_notification = Notification(
+            type=NotificationType.REPORT_RECEIVED,
+            recipient_id=current_user.id,
+            location_id=location.id,
+            utility_type_id=int(utility_type_id),
+            report_id=report.id,
+            message=(
+                f"We received your {report.utility_type.name} outage report for "
+                f"{location.area_name}."
+            ),
+        )
+        db.session.add(received_notification)
         db.session.commit()
 
         # --- FR3.3: check if this report just formed/joined a hotspot, notify provider ---

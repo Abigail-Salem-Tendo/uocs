@@ -1,3 +1,5 @@
+from collections import Counter
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 
@@ -7,6 +9,7 @@ from models.utility_type import UtilityType
 from models.outage_report import OutageReport, ReportStatus
 from models.location import Location
 from models.hotspot_service import HotspotService
+from models.notification import Notification
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -54,6 +57,24 @@ def toggle_active(user_id):
     state = "activated" if user.active else "deactivated"
     flash(f"{user.username} was {state}.", "success")
     return redirect(url_for("admin.users"))
+
+
+@admin_bp.route("/reports/<int:report_id>/delete", methods=["POST"])
+@login_required
+def delete_report(report_id):
+    _require_admin()
+
+    report = OutageReport.query.get_or_404(report_id)
+    removed_notifications = Notification.query.filter_by(report_id=report.id).delete(synchronize_session=False)
+
+    db.session.delete(report)
+    db.session.commit()
+
+    flash(
+        f"Report #{report.id} was removed from the system. Removed {removed_notifications} linked notification(s).",
+        "success",
+    )
+    return redirect(url_for("admin.dashboard"))
 
 
 @admin_bp.route("/users/<int:user_id>/assign-utility", methods=["POST"])
@@ -137,12 +158,30 @@ def dashboard():
     if location_filter:
         query = query.filter_by(location_id=location_filter)
 
+    summary_location_id = request.args.get("summary_location_id", type=int)
+
     reports = query.order_by(OutageReport.reported_at.desc()).all()
 
     hotspots = HotspotService.get_hotspots()
 
     utility_types = UtilityType.query.order_by(UtilityType.name).all()
     locations = Location.query.order_by(Location.area_name).all()
+
+    summary = None
+    if summary_location_id:
+        summary_location = Location.query.get_or_404(summary_location_id)
+        summary_reports = (
+            OutageReport.query.filter_by(location_id=summary_location.id)
+            .order_by(OutageReport.reported_at.desc())
+            .all()
+        )
+        summary = {
+            "location": summary_location,
+            "total_reports": len(summary_reports),
+            "status_counts": Counter(report.status for report in summary_reports),
+            "utility_type_counts": Counter(report.utility_type.name for report in summary_reports),
+            "reports": summary_reports,
+        }
 
     return render_template(
         "admin/dashboard.html",
@@ -154,4 +193,6 @@ def dashboard():
         current_status=status_filter,
         current_utility_type=utility_type_filter,
         current_location=location_filter,
+        summary=summary,
+        current_summary_location=summary_location_id,
     )

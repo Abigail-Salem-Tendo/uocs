@@ -5,6 +5,7 @@ from extensions import db
 
 
 class NotificationType(enum.Enum):
+    REPORT_RECEIVED = "report_received"
     HOTSPOT = "hotspot"
     STATUS_UPDATE = "status_update"
 
@@ -13,12 +14,15 @@ class Notification(db.Model):
     """
     In-app notification. Two use cases share this table:
 
+    - REPORT_RECEIVED: sent to the citizen who submitted a report.
+
     - HOTSPOT: sent to a UtilityProvider when a new hotspot cluster forms
       (FR3.3). "Once total" per (location_id, utility_type_id) is enforced
       at the application level in HotspotService.notify_new_hotspots(),
       not by a DB constraint, since a DB-level unique on
-      (location_id, utility_type_id) would also block STATUS_UPDATE
-      notifications for later reports in the same area/utility_type.
+      (location_id, utility_type_id) would also block STATUS_UPDATE and
+      REPORT_RECEIVED notifications for later reports in the same
+      area/utility_type.
 
     - STATUS_UPDATE: sent to the citizen who filed a report when a
       provider changes that report's status (e.g. to resolved).
