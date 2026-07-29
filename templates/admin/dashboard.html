@@ -30,6 +30,40 @@
 </section>
 
 <section>
+    <h3>Generate Area Summary</h3>
+    <form method="GET" action="{{ url_for('admin.dashboard') }}">
+        <select name="summary_location_id" required>
+            <option value="" disabled {% if not current_summary_location %}selected{% endif %}>Choose area</option>
+            {% for loc in locations %}
+                <option value="{{ loc.id }}" {% if current_summary_location == loc.id %}selected{% endif %}>{{ loc.area_name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Generate Summary</button>
+    </form>
+
+    {% if summary %}
+        <div>
+            <h4>{{ summary.location.area_name }}</h4>
+            <p>Total reports: {{ summary.total_reports }}</p>
+
+            <p>Status breakdown:</p>
+            <ul>
+                {% for status, count in summary.status_counts.items() %}
+                    <li>{{ status.value | replace('_', ' ') | title }}: {{ count }}</li>
+                {% endfor %}
+            </ul>
+
+            <p>Utility breakdown:</p>
+            <ul>
+                {% for utility_name, count in summary.utility_type_counts.items() %}
+                    <li>{{ utility_name }}: {{ count }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</section>
+
+<section>
     <h3>All Reports</h3>
 
     <form method="GET" action="{{ url_for('admin.dashboard') }}">
@@ -66,6 +100,7 @@
                 <th>Area</th>
                 <th>Description</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -77,6 +112,12 @@
                 <td>{{ report.location.area_name }}</td>
                 <td>{{ report.description }}</td>
                 <td>{{ report.status.value | replace('_', ' ') | title }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('admin.delete_report', report_id=report.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" onclick="return confirm('Delete this outage report?');">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

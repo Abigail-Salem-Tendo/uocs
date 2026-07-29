@@ -1,4 +1,7 @@
 from datetime import datetime
+
+from flask import current_app
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from flask_login import UserMixin
 from extensions import db, bcrypt
 
@@ -33,6 +36,19 @@ class User(UserMixin, db.Model):
 
     def check_password(self, plain_password):
         return bcrypt.check_password_hash(self.password_hash, plain_password)
+
+    def get_reset_token(self):
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        return serializer.dumps(self.id, salt='password-reset')
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = serializer.loads(token, salt='password-reset', max_age=expires_sec)
+        except (SignatureExpired, BadSignature):
+            return None
+        return User.query.get(user_id)
 
     def __repr__(self):
         return f'<User {self.email} ({self.user_type})>'
