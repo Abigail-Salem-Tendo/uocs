@@ -4,6 +4,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models.outage_report import OutageReport, ReportStatus
 from models.location import Location
+from models.notification import Notification, NotificationType
 
 provider_bp = Blueprint("provider", __name__, url_prefix="/provider")
 
@@ -68,11 +69,31 @@ def update_status(report_id):
 
     new_status = request.form.get("status")
     try:
-        report.status = ReportStatus[new_status]
+        new_status_enum = ReportStatus[new_status]
     except KeyError:
         flash("Invalid status value.", "danger")
         return redirect(url_for("provider.dashboard"))
 
+    status_changed = report.status != new_status_enum
+    report.status = new_status_enum
     db.session.commit()
+
+    #Tell the citizen who filed the report, its status change and each change is its own event.
+    if status_changed:
+        notification = Notification(
+            type=NotificationType.STATUS_UPDATE,
+            recipient_id=report.citizen_id,
+            location_id=report.location_id,
+            utility_type_id=report.utility_type_id,
+            report_id=report.id,
+            message=(
+                f"Your {report.utility_type.name} report in "
+                f"{report.location.area_name} is now "
+                f"{new_status_enum.value.replace('_', ' ')}."
+            ),
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
     flash(f"Report #{report.id} status updated to {report.status.value}.", "success")
     return redirect(url_for("provider.dashboard"))

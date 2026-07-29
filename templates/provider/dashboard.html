@@ -48,6 +48,7 @@
     <td><span class="status-badge status-{{ report.status.name|lower }}">{{ report.status.value }}</span></td>
     <td>
         <form method="post" action="{{ url_for('provider.update_status', report_id=report.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <select name="status">
             {% for s in statuses %}
             <option value="{{ s.name }}" {% if report.status == s %}selected{% endif %}>

@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    active = db.Column(db.Boolean, default=True, nullable=False)
 
     # Discriminator column for Single Table Inheritance
     user_type = db.Column(db.String(20), nullable=False)
@@ -19,6 +20,13 @@ class User(UserMixin, db.Model):
         'polymorphic_identity': 'user',
         'polymorphic_on': user_type
     }
+
+    @property
+    def is_active(self):
+        """Overrides UserMixin.is_active (which defaults to always True)
+        so Flask-Login's own session/remember-me checks also respect
+        Admin-driven deactivation, not just the login() route check."""
+        return self.active
 
     def set_password(self, plain_password):
         self.password_hash = bcrypt.generate_password_hash(plain_password).decode('utf-8')
