@@ -5,6 +5,7 @@ from extensions import db
 from models.outage_report import OutageReport, ReportStatus
 from models.location import Location
 from models.notification import Notification, NotificationType
+from models.hotspot_service import HotspotService
 
 provider_bp = Blueprint("provider", __name__, url_prefix="/provider")
 
@@ -20,6 +21,12 @@ def dashboard():
     _require_provider()
 
     query = OutageReport.query.filter_by(utility_type_id=current_user.utility_type_id)
+    hotspots = HotspotService.get_hotspots()
+    if current_user.utility_type_id:
+        hotspots = [
+            h for h in hotspots
+            if h["utility_type"].id == current_user.utility_type_id
+        ]
 
     status_filter = request.args.get("status")
     if status_filter:
@@ -52,6 +59,7 @@ def dashboard():
         statuses=list(ReportStatus),
         current_status=status_filter,
         current_location=location_filter,
+        hotspots=hotspots,
     )
 
 

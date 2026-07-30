@@ -14,6 +14,31 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
 
 
+<section>
+    <h3>Active Hotspots</h3>
+    {% if not hotspots %}
+        <p>No active hotspots.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Area</th>
+                    <th>Utility Type</th>
+                    <th>Report Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in hotspots %}
+                <tr>
+                    <td>{{ h.location.area_name }}</td>
+                    <td>{{ h.utility_type.name }}</td>
+                    <td>{{ h.report_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</section>
 <form method="get" action="{{ url_for('provider.dashboard') }}" class="filter-form">
 <label for="status">Status</label>
 <select name="status" id="status">

@@ -132,3 +132,11 @@ def notifications():
     )
 
     return render_template("citizen/notifications.html", notifications=my_notifications)
+
+
+@citizen_bp.route("/outage-map")
+@login_required
+def outage_map():
+    _require_citizen()
+
+    return render_template("citizen/outage_map.html")
