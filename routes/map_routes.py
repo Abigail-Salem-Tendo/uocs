@@ -34,7 +34,8 @@ def outages_map_data():
     # hotspots, so we can check membership per report below instead of
     # calling get_hotspots() once per row.
     hotspot_keys = {
-        (h.location_id, h.utility_type_id) for h in HotspotService.get_hotspots()
+        (h["location"].id, h["utility_type"].id)
+        for h in HotspotService.get_hotspots()
     }
 
     data = [
