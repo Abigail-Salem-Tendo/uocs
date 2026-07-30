@@ -3,6 +3,17 @@
 {% block content %}
 <h1>Provider Dashboard</h1>
 
+<div id="hotspot-map" style="height: 420px; width: 100%; border-radius: 8px; margin-bottom: 1.5rem;"></div>
+
+<script>
+    function initMap() {
+    renderOutageMap("hotspot-map", "/api/outages/map-data");
+    }
+</script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+
+
 <form method="get" action="{{ url_for('provider.dashboard') }}" class="filter-form">
 <label for="status">Status</label>
 <select name="status" id="status">

@@ -23,6 +23,10 @@
         </datalist>
     </div>
 
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
+    <p id="location-status" class="form-hint">Detecting your location…</p>
+
     <div>
         <label for="address">Address (optional)</label>
         <input type="text" id="address" name="address" placeholder="Street / landmark">
@@ -45,4 +49,28 @@
 
     <button type="submit">Submit Report</button>
 </form>
+
+<button type="submit">Submit Report</button>
+</form>
+
+<script>
+const locationStatus = document.getElementById("location-status");
+
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+    (position) => {
+        document.getElementById("latitude").value = position.coords.latitude;
+        document.getElementById("longitude").value = position.coords.longitude;
+        locationStatus.textContent = "Location detected.";
+    },
+    (error) => {
+        locationStatus.textContent =
+        "Couldn't detect your location automatically. Please enable location access and try again.";
+        console.error("Geolocation error:", error);
+    }
+    );
+} else {
+    locationStatus.textContent = "Your browser doesn't support automatic location detection.";
+}
+</script>
 {% endblock %}

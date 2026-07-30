@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Outage Map{% endblock %}
+
+{% block content %}
+<section class="section-centered">
+  <h1>City-Wide Outage Map</h1>
+  <p>Live view of reported outages across the city.</p>
+
+  <div id="outage-map" style="height: 480px; width: 100%; border-radius: 8px;"></div>
+
+  <div class="map-legend">
+    <span><span class="legend-dot" style="background:#e0a800;"></span> Pending</span>
+    <span><span class="legend-dot" style="background:#2b8cbe;"></span> In progress</span>
+    <span><span class="legend-dot" style="background:#2e7d32;"></span> Resolved</span>
+    <span><span class="legend-dot" style="background:#c62828;"></span> Hotspot</span>
+  </div>
+</section>
+
+<script>
+  function initMap() {
+    renderOutageMap("outage-map", "/api/outages/map-data");
+  }
+</script>
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap" async defer></script>
+{% endblock %}

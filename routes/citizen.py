@@ -56,7 +56,14 @@ def report_outage():
         ).first()
 
         if not location:
-            location = Location(area_name=area_name_raw, address=address)
+            latitude = request.form.get("latitude", type=float)
+            longitude = request.form.get("longitude", type=float)
+            location = Location(
+                area_name=area_name_raw,
+                address=address,
+                latitude=latitude,
+                longitude=longitude,
+            )
             db.session.add(location)
             db.session.flush()  # get location.id without a full commit yet
 

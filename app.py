@@ -15,6 +15,11 @@ def create_app():
     migrate.init_app(app, db)
     csrf.init_app(app)
 
+    @app.context_processor
+    def inject_google_maps_key():
+        import os
+        return dict(google_maps_api_key=os.environ.get("GOOGLE_MAPS_API_KEY", ""))
+
     login_manager.login_view = 'auth.login'
 
     from models.user import User
@@ -47,6 +52,9 @@ def create_app():
 
     from routes.admin_routes import admin_bp
     app.register_blueprint(admin_bp)
+
+    from routes.map_routes import map_bp
+    app.register_blueprint(map_bp)
 
     from utils.seed import seed_db
     app.cli.add_command(seed_db)
