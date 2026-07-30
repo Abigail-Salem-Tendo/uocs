@@ -10,11 +10,16 @@ from models.utility_type import UtilityType
 from models.outage_report import OutageReport, ReportStatus
 
 
-def _get_or_create_location(area_name, address=None):
+def _get_or_create_location(area_name, address=None, latitude=None, longitude=None):
     loc = Location.query.filter(Location.area_name.ilike(area_name)).first()
     if loc:
         return loc
-    loc = Location(area_name=area_name, address=address)
+    loc = Location(
+        area_name=area_name,
+        address=address,
+        latitude=latitude,
+        longitude=longitude,
+    )
     db.session.add(loc)
     db.session.flush()
     return loc
@@ -67,9 +72,11 @@ def seed_db():
     db.session.add_all(citizens)
     db.session.flush()
 
-    ntinda = _get_or_create_location("Ntinda")
-    bugolobi = _get_or_create_location("Bugolobi")
-    kansanga = _get_or_create_location("Kansanga")
+    # Approximate real-world coordinates for these Kampala suburbs — precise
+    # enough for the map/hotspot demo, not surveyed exact addresses.
+    ntinda = _get_or_create_location("Ntinda", latitude=0.3476, longitude=32.6122)
+    bugolobi = _get_or_create_location("Bugolobi", latitude=0.3213, longitude=32.6183)
+    kansanga = _get_or_create_location("Kansanga", latitude=0.2865, longitude=32.6058)
     db.session.flush()
 
     now = datetime.utcnow()
